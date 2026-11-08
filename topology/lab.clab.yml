@@ -1,0 +1,40 @@
+name: homelab
+topology:
+  defaults:
+    kind: linux
+  nodes:
+    r1: &frr
+      image: quay.io/frrouting/frr:9.1.0
+      binds:
+        - ../configs/r1/frr.conf:/etc/frr/frr.conf
+        - ../configs/common/daemons:/etc/frr/daemons
+        - ../configs/common/vtysh.conf:/etc/frr/vtysh.conf
+      exec:
+        - sysctl -w net.ipv4.ip_forward=1
+    r2:
+      <<: *frr
+      binds:
+        - ../configs/r2/frr.conf:/etc/frr/frr.conf
+        - ../configs/common/daemons:/etc/frr/daemons
+        - ../configs/common/vtysh.conf:/etc/frr/vtysh.conf
+    r3:
+      <<: *frr
+      binds:
+        - ../configs/r3/frr.conf:/etc/frr/frr.conf
+        - ../configs/common/daemons:/etc/frr/daemons
+        - ../configs/common/vtysh.conf:/etc/frr/vtysh.conf
+    h1:
+      image: alpine:3.20
+      exec:
+        - ip addr add 192.168.1.10/24 dev eth1
+        - ip route add 192.168.3.0/24 via 192.168.1.1
+    h2:
+      image: alpine:3.20
+      exec:
+        - ip addr add 192.168.3.10/24 dev eth1
+        - ip route add 192.168.1.0/24 via 192.168.3.1
+  links:
+    - endpoints: ["r1:eth1", "r2:eth1"]
+    - endpoints: ["r2:eth2", "r3:eth1"]
+    - endpoints: ["r1:eth2", "h1:eth1"]
+    - endpoints: ["r3:eth2", "h2:eth1"]
