@@ -1,0 +1,20 @@
+name: lab
+on: [push, workflow_dispatch]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Outils
+        run: |
+          pip install ansible-core
+          bash -c "$(curl -sL https://get.containerlab.dev)"
+      - name: Génération des configs (Ansible)
+        run: make configs
+      - name: Déploiement du lab (containerlab)
+        run: make deploy
+      - name: Tests OSPF / BGP / connectivité
+        run: make test
+      - name: Nettoyage
+        if: always()
+        run: make destroy
