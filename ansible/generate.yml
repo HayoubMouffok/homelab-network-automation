@@ -1,0 +1,15 @@
+- name: Génération des configurations FRR
+  hosts: routers
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Dossier de configuration
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/../configs/{{ inventory_hostname }}"
+        state: directory
+        mode: "0755"
+    - name: frr.conf
+      ansible.builtin.template:
+        src: templates/frr.conf.j2
+        dest: "{{ playbook_dir }}/../configs/{{ inventory_hostname }}/frr.conf"
+        mode: "0644"
