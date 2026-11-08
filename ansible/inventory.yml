@@ -1,0 +1,35 @@
+all:
+  children:
+    routers:
+      hosts:
+        r1:
+          router_id: 1.1.1.1
+          asn: 65001
+          interfaces:
+            - { name: eth1, ip: 10.0.12.1/30 }
+            - { name: eth2, ip: 192.168.1.1/24 }
+          ospf_networks: [1.1.1.1/32, 10.0.12.0/30]
+          bgp_neighbors:
+            - { ip: 2.2.2.2, asn: 65001, update_source: lo }
+          bgp_networks: [192.168.1.0/24]
+        r2:
+          router_id: 2.2.2.2
+          asn: 65001
+          interfaces:
+            - { name: eth1, ip: 10.0.12.2/30 }
+            - { name: eth2, ip: 10.0.23.1/30 }
+          ospf_networks: [2.2.2.2/32, 10.0.12.0/30]
+          bgp_neighbors:
+            - { ip: 1.1.1.1, asn: 65001, update_source: lo, next_hop_self: true }
+            - { ip: 10.0.23.2, asn: 65002 }
+          bgp_networks: []
+        r3:
+          router_id: 3.3.3.3
+          asn: 65002
+          interfaces:
+            - { name: eth1, ip: 10.0.23.2/30 }
+            - { name: eth2, ip: 192.168.3.1/24 }
+          ospf_networks: []
+          bgp_neighbors:
+            - { ip: 10.0.23.1, asn: 65001 }
+          bgp_networks: [192.168.3.0/24]
