@@ -1,0 +1,40 @@
+frr defaults traditional
+hostname {{ inventory_hostname }}
+log stdout
+service integrated-vtysh-config
+!
+interface lo
+ ip address {{ router_id }}/32
+!
+{% for i in interfaces %}
+interface {{ i.name }}
+ ip address {{ i.ip }}
+!
+{% endfor %}
+{% if ospf_networks %}
+router ospf
+ ospf router-id {{ router_id }}
+{% for n in ospf_networks %}
+ network {{ n }} area 0
+{% endfor %}
+!
+{% endif %}
+router bgp {{ asn }}
+ bgp router-id {{ router_id }}
+ no bgp ebgp-requires-policy
+{% for nb in bgp_neighbors %}
+ neighbor {{ nb.ip }} remote-as {{ nb.asn }}
+{% if nb.update_source is defined %}
+ neighbor {{ nb.ip }} update-source {{ nb.update_source }}
+{% endif %}
+{% endfor %}
+ !
+ address-family ipv4 unicast
+{% for n in bgp_networks %}
+  network {{ n }}
+{% endfor %}
+{% for nb in bgp_neighbors if nb.next_hop_self | default(false) %}
+  neighbor {{ nb.ip }} next-hop-self
+{% endfor %}
+ exit-address-family
+!
